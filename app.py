@@ -53,11 +53,17 @@ parking_space = st.slider(
 
 st.header("📝 Parking Situation")
 
+st.caption(
+    "Describe the current parking conditions. "
+    "Mention things like crowd, space size, nearby vehicles, "
+    "or difficulty in entering and exiting."
+)
+
 situation = st.text_area(
     "Describe your parking situation:",
     placeholder=(
-        "Example: The parking area is crowded and "
-        "the parking space is small."
+        "Example: The parking area is crowded, "
+        "the space is small, and vehicles are parked nearby."
     ),
     height=120
 )
@@ -69,13 +75,34 @@ situation = st.text_area(
 
 if st.button("🔍 Analyze Parking", use_container_width=True):
 
-    if situation.strip():
+    # Validate parking situation
+    if not situation.strip():
+
+        st.warning(
+            "⚠️ Please describe your parking situation "
+            "before analyzing."
+        )
+
+        st.info(
+            "Example: The parking area is crowded and "
+            "the parking space is small."
+        )
+
+    elif len(situation.strip()) < 10:
+
+        st.warning(
+            "⚠️ Please provide a little more information "
+            "about the parking situation."
+        )
+
+    else:
 
         # Calculate fuzzy suitability score
         score = calculate_parking_suitability(
             crowd_level,
             parking_space
         )
+
 
         # -----------------------------
         # Score
@@ -138,12 +165,14 @@ if st.button("🔍 Analyze Parking", use_container_width=True):
         col1, col2 = st.columns(2)
 
         with col1:
+
             st.metric(
                 "Crowd Level",
                 f"{crowd_level}/10"
             )
 
         with col2:
+
             st.metric(
                 "Parking Space",
                 f"{parking_space}/10"
@@ -176,12 +205,14 @@ if st.button("🔍 Analyze Parking", use_container_width=True):
                 for item in advice:
 
                     if isinstance(item, dict):
+
                         text = item.get("text", "")
 
                         if text:
                             st.write(text)
 
                     else:
+
                         st.write(item)
 
             else:
@@ -213,9 +244,3 @@ if st.button("🔍 Analyze Parking", use_container_width=True):
                     "Based on the suitability score, this space "
                     "appears suitable for parking."
                 )
-
-    else:
-
-        st.warning(
-            "Please describe your parking situation."
-        )
