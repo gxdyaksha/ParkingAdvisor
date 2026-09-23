@@ -6,14 +6,22 @@ from gemini_advisor import get_parking_advice
 
 st.set_page_config(
     page_title="AI Parking Advisor",
-    page_icon="🚗"
+    page_icon="🚗",
+    layout="centered"
 )
+
+
+# -----------------------------
+# Header
+# -----------------------------
 
 st.title("🚗 AI Parking Advisor")
 
 st.write(
     "Welcome to the Parking Difficulty & Suitability Advisor."
 )
+
+st.divider()
 
 
 # -----------------------------
@@ -24,16 +32,18 @@ st.header("📊 Parking Conditions")
 
 crowd_level = st.slider(
     "Crowd Level",
-    0,
-    10,
-    5
+    min_value=0,
+    max_value=10,
+    value=5,
+    help="0 = Very Low Crowd, 10 = Extremely Crowded"
 )
 
 parking_space = st.slider(
     "Parking Space Size",
-    0,
-    10,
-    5
+    min_value=0,
+    max_value=10,
+    value=5,
+    help="0 = Very Small, 10 = Very Large"
 )
 
 
@@ -45,7 +55,11 @@ st.header("📝 Parking Situation")
 
 situation = st.text_area(
     "Describe your parking situation:",
-    placeholder="Example: The parking area is crowded and the space is small."
+    placeholder=(
+        "Example: The parking area is crowded and "
+        "the parking space is small."
+    ),
+    height=120
 )
 
 
@@ -53,11 +67,11 @@ situation = st.text_area(
 # Analyze Parking
 # -----------------------------
 
-if st.button("🔍 Analyze Parking"):
+if st.button("🔍 Analyze Parking", use_container_width=True):
 
     if situation.strip():
 
-        # Calculate suitability
+        # Calculate fuzzy suitability score
         score = calculate_parking_suitability(
             crowd_level,
             parking_space
@@ -67,6 +81,8 @@ if st.button("🔍 Analyze Parking"):
         # Score
         # -----------------------------
 
+        st.divider()
+
         st.header("📈 Parking Suitability Score")
 
         st.metric(
@@ -74,10 +90,13 @@ if st.button("🔍 Analyze Parking"):
             f"{score}/100"
         )
 
-        st.progress(int(score))
+        st.progress(
+            min(max(int(score), 0), 100)
+        )
+
 
         # -----------------------------
-        # Result
+        # Suitability Result
         # -----------------------------
 
         if score < 40:
@@ -93,7 +112,8 @@ if st.button("🔍 Analyze Parking"):
             st.warning("⚠️ Moderate Suitability")
 
             result_message = (
-                "This parking space can be used, but extra caution is recommended."
+                "This parking space can be used, "
+                "but extra caution is recommended."
             )
 
         else:
@@ -108,19 +128,37 @@ if st.button("🔍 Analyze Parking"):
 
 
         # -----------------------------
-        # Input Summary
+        # Parking Analysis
         # -----------------------------
+
+        st.divider()
 
         st.header("📋 Parking Analysis")
 
-        st.write(f"**Crowd Level:** {crowd_level}/10")
-        st.write(f"**Parking Space Size:** {parking_space}/10")
-        st.write(f"**Suitability Score:** {score}/100")
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.metric(
+                "Crowd Level",
+                f"{crowd_level}/10"
+            )
+
+        with col2:
+            st.metric(
+                "Parking Space",
+                f"{parking_space}/10"
+            )
+
+        st.write(
+            f"**Suitability Score:** {score}/100"
+        )
 
 
         # -----------------------------
-        # AI Advice
+        # AI Parking Advice
         # -----------------------------
+
+        st.divider()
 
         st.header("🤖 Parking Advice")
 
@@ -138,11 +176,16 @@ if st.button("🔍 Analyze Parking"):
                 for item in advice:
 
                     if isinstance(item, dict):
-                        st.write(item.get("text", ""))
+                        text = item.get("text", "")
+
+                        if text:
+                            st.write(text)
+
                     else:
                         st.write(item)
 
             else:
+
                 st.write(advice)
 
         except Exception:
@@ -151,8 +194,8 @@ if st.button("🔍 Analyze Parking"):
 
                 st.info(
                     "AI advice is temporarily unavailable. "
-                    "Based on the score, consider finding a larger "
-                    "or less crowded parking space."
+                    "Based on the score, consider finding a "
+                    "larger or less crowded parking space."
                 )
 
             elif score < 70:
